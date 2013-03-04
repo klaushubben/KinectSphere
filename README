@@ -1,0 +1,10 @@
+note:
+on setup, press 'g' twice to set the camera. probably should enable camera then disable right away instead.
+
+
+add-on dependencies: 
+
+ofxKinect
+ofxUI
+ofxXMLSettings
+ofxOpenCv
