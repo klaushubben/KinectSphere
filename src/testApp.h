@@ -83,6 +83,7 @@ public:
     ofMesh realtimeMesh;
     vector<Cloud> clouds;
     int kinectStep;
+    int kinectDelay;
     bool bDrawRTSphere;
     float ptSphereScale;
     bool drawCloudStrings;
@@ -103,7 +104,7 @@ public:
     float worldScale;
     ofVec3f globeRotation;
     
-    
+    bool showEarth;
     
     
     

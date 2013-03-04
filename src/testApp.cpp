@@ -116,13 +116,14 @@ void testApp::setup(){
     ptSphereScale = 0.3;
     globeRotRateY = 0.5f;  
     lissScale = 275.f;
+    kinectDelay = 100;
     kinectStep = 5;
     drawCloudStrings = true;
-    
+    showEarth = true;
     
     
     float dim = 16;
-    float xSize = (220-OFX_UI_GLOBAL_WIDGET_SPACING)-OFX_UI_GLOBAL_WIDGET_SPACING;
+    float xSize = (200-OFX_UI_GLOBAL_WIDGET_SPACING)-OFX_UI_GLOBAL_WIDGET_SPACING;
     
     gui = new ofxUICanvas(0, 0, xSize, ofGetHeight());
     gui->setTheme( OFX_UI_THEME_ZOOLANDER );
@@ -131,46 +132,53 @@ void testApp::setup(){
     //gui->addFPSSlider("FPS", xSize, dim*.25, 1000);
     //gui->addSpacer(xSize, 1); 
     
-    
+
+    gui->addWidgetDown( new ofxUIToggle("SHOW EARTH", drawCloudStrings, dim*2, dim*2 ) );
+    ofxUIToggle *toggle = (ofxUIToggle *) gui->getWidget("SHOW EARTH");
+    toggle->getLabel()->setColorFill( ofColor( 255,255,255) );
+
     gui->addMinimalSlider("EARTH RotY", 0.0, 2.0, globeRotRateY, xSize, dim);
     ofxUISlider *slider = (ofxUISlider *) gui->getWidget("EARTH RotY");
     slider->getLabel()->setColorFill( ofColor( 255,255,255) );
     
-    //gui->addSpacer(xSize, 1); 
+    
+    gui->addSpacer(xSize + 26, 1); // --------------
+    
+    gui->addMinimalSlider("CAPTURE DELAY", 10, 500, kinectDelay, xSize, dim);
+    slider = (ofxUISlider *) gui->getWidget("CAPTURE DELAY");
+    slider->getLabel()->setColorFill( ofColor( 255,255,255) );
+    
+    gui->addMinimalSlider("KINECT STEP", 1, 16, kinectStep, xSize, dim);
+    slider = (ofxUISlider *) gui->getWidget("KINECT STEP");
+    slider->getLabel()->setColorFill( ofColor( 255,255,255) );
+
+    gui->addWidgetDown( new ofxUIToggle("DRAW STRINGS", drawCloudStrings, dim*2, dim*2 ) );
+    toggle = (ofxUIToggle *) gui->getWidget("DRAW STRINGS");
+    toggle->getLabel()->setColorFill( ofColor( 255,255,255) );
     
     gui->addMinimalSlider("LISS SCALE", 10, 800, lissScale, xSize, dim);
     slider = (ofxUISlider *) gui->getWidget("LISS SCALE");
     slider->getLabel()->setColorFill( ofColor( 255,255,255) );
     
-    //gui->addSpacer(xSize, 1); 
-    
-    gui->addMinimalSlider("KINECT STEP", 1, 16, kinectStep, xSize, dim);
-    slider = (ofxUISlider *) gui->getWidget("KINECT STEP");
-    slider->getLabel()->setColorFill( ofColor( 255,255,255) );
-    
-    //gui->addSpacer(xSize, 1); 
+
+    gui->addSpacer(xSize + 26, 1); // --------------
+
     
     gui->addMinimalSlider("Point Sphere SCALE", 0.1, 2, ptSphereScale, xSize, dim);
     slider = (ofxUISlider *) gui->getWidget("Point Sphere SCALE");
     slider->getLabel()->setColorFill( ofColor( 255,255,255) );
     
-    //gui->addSpacer(xSize, 1);
     
-    gui->addWidgetDown( new ofxUIToggle("DRAW STRINGS", drawCloudStrings, dim*2, dim*2 ) );
-    ofxUIToggle *toggle = (ofxUIToggle *) gui->getWidget("DRAW STRINGS");
-    toggle->getLabel()->setColorFill( ofColor( 255,255,255) );
+    gui->addSpacer(xSize + 26, 1); // --------------
     
-    gui->addSpacer(xSize, 1); 
     
     gui->addWidgetDown( new ofxUILabel("F: Toggle Fullscreen", OFX_UI_FONT_SMALL  ) );
     gui->addWidgetDown( new ofxUILabel("G: Toggle GUI / CAMERA", OFX_UI_FONT_SMALL  ) );
     gui->addWidgetDown( new ofxUILabel("S: Show/Hide POINT SPHERE", OFX_UI_FONT_SMALL  ) );
-    
-    
-    
+   
+    gui->disable();
     
     ofAddListener(gui->newGUIEvent,this,&testApp::guiEvent);
-    keyPressed('g');
     
 }
 
@@ -192,7 +200,7 @@ void testApp::update(){
     if( ofGetFrameNum() > 100 ){
         
         // captures cloud snapshot
-        if( ( ofGetFrameNum() % 300 ) == 0 ) captureCloud();
+        if( ( ofGetFrameNum() % kinectDelay ) == 0 ) captureCloud();
         
         // captures realtime point cloud
         if( bDrawRTSphere ) buildRTCloud();
@@ -370,6 +378,8 @@ void testApp::draw(){
     }
     
     
+    if( showEarth ){
+    
     // ---------------- DRAW EARTH / POINT SPHERE
     
     ofPushMatrix();
@@ -428,9 +438,14 @@ void testApp::draw(){
     
     ofPopMatrix();
     
+        
+    }// end of showEarth
     
+        
     // -----------------
     
+        
+        
     
     cam.end();
     // ofDisableAlphaBlending();
@@ -643,6 +658,18 @@ void testApp::guiEvent(ofxUIEventArgs &e) {
         drawCloudStrings = (bool)toggle->getValue();
         //cout << "RANDOM? " << randomizeCloud << endl;
     } 
+    else 
+        if( name == "SHOW EARTH" ){
+            
+            ofxUIToggle *toggle =( ofxUIToggle*) e.widget;
+            showEarth = (bool)toggle->getValue();
+        }
+       
+     else
+         if( name == "CAPTURE DELAY"){
+             ofxUISlider *slider =( ofxUISlider *) e.widget;
+             kinectDelay = (int)slider->getScaledValue();
+         }
     else
         if( name == "KINECT STEP" ){
             ofxUISlider *slider = (ofxUISlider *) e.widget; 
