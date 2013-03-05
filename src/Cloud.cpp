@@ -128,6 +128,8 @@ void Cloud::seekSphere(){
     
     for( int i = 0; i < points.size(); i++ ){
         
+        if( age > delays[i] ){
+        
         desiredVel.set( targets[i] );
         desiredVel -= points[i];
         
@@ -140,11 +142,13 @@ void Cloud::seekSphere(){
         desiredVel *= 6.f;
         
         points[i] += desiredVel;
+    
+        }
     }
     
     if( mode == 1 ) 
         isDead = arrived;
-    
+        
 }
 
 
@@ -175,10 +179,10 @@ void Cloud::addPoint ( ofVec3f pt, bool makeVel = false ) {
     // add random velocity vec3f
     if( makeVel ) vels.push_back( ofVec3f( ofRandom( 4.f, 2.f), 0, ofRandom(-2.f,2.f) ));
     
-    
     //populate and shuffle the 'randoms' vector
     randoms.push_back(  (int)randoms.size() );
     targets.push_back( ofVec3f(0,0,0) );
+    
 }
 
 void Cloud::finish() {
@@ -192,6 +196,31 @@ void Cloud::finish() {
     lissY = LissRatios[ran].y;
     
     //cout << points.size() << " :: " << lissX << " :: " << lissY << endl;
+    
+
+    // add delay value to use for 'dementor' effect
+    // iterate all points and find top/left
+    int top = 2000;
+    int left = 2000;;
+    
+    for( int i = 0; i < points.size(); i++ ){
+        
+        if( points[i].y < top ) top = points[i].y;
+        if( points[i].x < left ) left = points[i].x;
+    }
+    
+    cout << " --> top: " << top << "  | left: " << left << endl;
+    
+    for( int i = 0; i < points.size(); i++ ){
+        
+        float diffX = points[i].x - left;
+        float diffY = points[i].y - top;        
+        
+        //cout << (diffX + diffY) * 0.5 << endl;
+        
+        delays.push_back( (diffX + diffY) * 0.3 ) ;
+    
+    }
     
 }
 
@@ -220,24 +249,20 @@ void Cloud::addSphereTarg( ofVec3f sph ){
 
 void Cloud::updateLissajous() {
     
-    
     lissOffset += 0.3;
     if( lissOffset >= points.size() ){
         lissOffset = 0.0f;
-    }
-    
-    //float dist = 400.f;
-    
-    float dist;
+    }    
+
+    float dist = 2.f;
     
     for( int i = 0; i < points.size(); i++ ){
-        
+                         
         float xPct = (float)(( (float)i+lissOffset) * lissX ) * 0.0001;
         float yPct = (float)(( (float)i+lissOffset) * lissY ) * 0.0001;
         
-        dist = 1.f + ((float)(colors[i].getBrightness()/100.f) * 0.1 );
+        //dist = 1.f + ((float)(colors[i].getBrightness()/100.f) * 0.1 );
         //if( i < 30 ) cout << dist << " : " << colors[i].getBrightness() << endl;
-        
         
         // this is cylindrical
         //targets[randoms[i]].x = dist * sin(xPct);
@@ -247,15 +272,10 @@ void Cloud::updateLissajous() {
         targets[randoms[i]].x = dist * lissScale * sin(xPct) * sin(yPct);
         targets[randoms[i]].y = dist * lissScale * cos(yPct) * sin(xPct);
         
-        
         // z is the same for both
         targets[randoms[i]].z = dist * lissScale * cos(xPct);
         
-        //targets[randoms[i]] *= dist;
-        
-        //if( i == 0 ) cout << targets[randoms[i]] << endl;
     }
-    
     
 }
 

@@ -58,6 +58,10 @@ public:
     
     ofVec3f sphereTarg;
     
+    // when using dementor effect
+    vector<int> delays;
+    
+    
     
     // Lissajous
     int lissX, lissY;
